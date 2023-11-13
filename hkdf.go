@@ -30,5 +30,4 @@ func deriveNonce(masterKey [keySize]byte, salt [keySize]byte, context string, co
 		return data24, errors.New("could not derive a nonce")
 	}
 	return data24, nil
-
 }

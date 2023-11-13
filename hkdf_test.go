@@ -7,7 +7,6 @@ import (
 )
 
 func TestHKDFDerivation(t *testing.T) {
-
 	engine, err := InitCryptoEngine("test-engine")
 	if err != nil {
 		t.Fatal(err)
@@ -32,5 +31,4 @@ func TestHKDFDerivation(t *testing.T) {
 
 		previousKeys[i] = derivedKeyHex
 	}
-
 }

@@ -8,7 +8,6 @@ import (
 )
 
 func TestSecretKeyEncryption(t *testing.T) {
-
 	message, err := NewMessage("The quick brown fox jumps over the lazy dog", 1)
 	if err != nil {
 		t.Fatal(err)
@@ -191,11 +190,9 @@ func TestPublicKeyEncryption(t *testing.T) {
 		cleanUp()
 		t.Fatal("Public key encryption/decryption broken")
 	}
-
 }
 
 func TestSanitization(t *testing.T) {
-
 	id := "S E C	51"
 
 	sanitized := sanitizeIdentifier(id)
@@ -206,7 +203,6 @@ func TestSanitization(t *testing.T) {
 	if strings.Contains(sanitized, "\t") {
 		t.Error("The sanitization function does not remove tabs")
 	}
-
 }
 
 func cleanUp() {

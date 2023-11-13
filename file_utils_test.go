@@ -8,7 +8,6 @@ import (
 )
 
 func TestFileExists(t *testing.T) {
-
 	// create key base folder
 	if err := createBaseKeyFolder(testKeyPath); err != nil {
 		t.Error(err)
@@ -20,7 +19,6 @@ func TestFileExists(t *testing.T) {
 }
 
 func TestFileUtils(t *testing.T) {
-
 	// create key base folder
 	if err := createBaseKeyFolder(testKeyPath); err != nil {
 		t.Error(err)
@@ -68,11 +66,9 @@ func TestFileUtils(t *testing.T) {
 	if err := removeFolder(testKeyPath); err != nil {
 		t.Fatal(err)
 	}
-
 }
 
 func TestKeyFileUtils(t *testing.T) {
-
 	// create key base folder
 	if err := createBaseKeyFolder(testKeyPath); err != nil {
 		t.Error(err)
@@ -107,5 +103,4 @@ func TestKeyFileUtils(t *testing.T) {
 	if err := removeFolder(testKeyPath); err != nil {
 		t.Fatal(err)
 	}
-
 }

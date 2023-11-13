@@ -15,7 +15,6 @@ type VerificationEngine struct {
 // This function instantiate the verification engine by leveraging the context
 // Basically if a public key of a peer is available locally then it's locaded here
 func NewVerificationEngine(context string) (VerificationEngine, error) {
-
 	engine := VerificationEngine{}
 
 	if context == "" {
@@ -39,13 +38,11 @@ func NewVerificationEngine(context string) (VerificationEngine, error) {
 	}
 
 	return engine, nil
-
 }
 
 // This function instantiate the verification engine by passing it the key (at the moment only the public key)
 // go nacl crypto does not support Ed25519 signatures yet
 func NewVerificationEngineWithKey(publicKey []byte) (VerificationEngine, error) {
-
 	engine := VerificationEngine{}
 	var data32 [keySize]byte
 
@@ -61,7 +58,6 @@ func NewVerificationEngineWithKey(publicKey []byte) (VerificationEngine, error) 
 
 	engine.publicKey = data32
 	return engine, nil
-
 }
 
 func (e VerificationEngine) PublicKey() [keySize]byte {
