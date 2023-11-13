@@ -119,7 +119,6 @@ func InitCryptoEngine(communicationIdentifier string) (*CryptoEngine, error) {
 
 	// finally return the CryptoEngine instance
 	return ce, nil
-
 }
 
 // this function reads nonceSize random data
@@ -157,7 +156,6 @@ func generateSecretKey() ([keySize]byte, error) {
 // if the file is older than N days (default 2) generate a new one and overwrite the old
 // TODO: rotate the salt file
 func loadSalt(id string) ([keySize]byte, error) {
-
 	var salt [keySize]byte
 
 	saltFile := fmt.Sprintf(saltSuffixFormat, id)
@@ -183,7 +181,6 @@ func loadSalt(id string) ([keySize]byte, error) {
 // load the key random bytes from the id_secret.key
 // if the file does not exist, create a new one
 func loadSecretKey(id string) ([keySize]byte, error) {
-
 	var key [keySize]byte
 
 	keyFile := fmt.Sprintf(secretSuffixFormat, id)
@@ -209,7 +206,6 @@ func loadSecretKey(id string) ([keySize]byte, error) {
 // load the nonce key random bytes from the id_nonce.key
 // if the file does not exist, create a new one
 func loadNonceKey(id string) ([keySize]byte, error) {
-
 	var nonceKey [keySize]byte
 
 	nonceFile := fmt.Sprintf(nonceSuffixFormat, id)
@@ -236,7 +232,6 @@ func loadNonceKey(id string) ([keySize]byte, error) {
 // if the files do not exist, create them
 // Returns the publicKey, privateKey, error
 func loadKeyPairs(id string) ([keySize]byte, [keySize]byte, error) {
-
 	var private [keySize]byte
 	var public [keySize]byte
 	var err error
@@ -289,7 +284,6 @@ func loadKeyPairs(id string) ([keySize]byte, [keySize]byte, error) {
 
 	// return the data
 	return public, private, err
-
 }
 
 // Sanitizes the input of the communicationIdentifier
@@ -321,7 +315,7 @@ func (engine *CryptoEngine) fetchAndIncrement() string {
 	counterString := strconv.FormatUint(engine.counter, 10)
 
 	// increment the counter
-	engine.counter += 1
+	engine.counter++
 
 	return counterString
 }
@@ -332,8 +326,7 @@ func (engine *CryptoEngine) PublicKey() []byte {
 }
 
 // This method accepts a message , then encrypts its Version+Type+Text using a symmetric key
-func (engine *CryptoEngine) NewEncryptedMessage(msg message) (EncryptedMessage, error) {
-
+func (engine *CryptoEngine) NewEncryptedMessage(msg Message) (EncryptedMessage, error) {
 	m := EncryptedMessage{}
 
 	// derive nonce
@@ -353,14 +346,12 @@ func (engine *CryptoEngine) NewEncryptedMessage(msg message) (EncryptedMessage, 
 	m.length = uint64(len(m.data) + len(m.nonce) + 8)
 
 	return m, nil
-
 }
 
 // This method accepts the message as byte slice and the public key of the receiver of the messae,
 // then encrypts it using the asymmetric key public key.
 // If the public key is not privisioned and does not have the required length of 32 bytes it raises an exception.
-func (engine *CryptoEngine) NewEncryptedMessageWithPubKey(msg message, verificationEngine VerificationEngine) (EncryptedMessage, error) {
-
+func (engine *CryptoEngine) NewEncryptedMessageWithPubKey(msg Message, verificationEngine VerificationEngine) (EncryptedMessage, error) {
 	encryptedMessage := EncryptedMessage{}
 
 	// get the peer public key
@@ -428,14 +419,12 @@ func (engine *CryptoEngine) NewEncryptedMessageWithPubKey(msg message, verificat
 	encryptedMessage.length = uint64(len(encryptedMessage.data) + len(encryptedMessage.nonce) + 8)
 
 	return encryptedMessage, nil
-
 }
 
 // This method is used to decrypt messages where symmetrci encryption is used
-func (engine *CryptoEngine) Decrypt(encryptedBytes []byte) (*message, error) {
-
+func (engine *CryptoEngine) Decrypt(encryptedBytes []byte) (*Message, error) {
 	var err error
-	msg := new(message)
+	msg := new(Message)
 
 	// convert the bytes to an encrypted message
 	encryptedMessage, err := encryptedMessageFromBytes(encryptedBytes)
@@ -459,8 +448,7 @@ func (engine *CryptoEngine) Decrypt(encryptedBytes []byte) (*message, error) {
 }
 
 // This method is used to decrypt messages where symmetrci encryption is used
-func (engine *CryptoEngine) DecryptWithPublicKey(encryptedBytes []byte, verificationEngine VerificationEngine) (*message, error) {
-
+func (engine *CryptoEngine) DecryptWithPublicKey(encryptedBytes []byte, verificationEngine VerificationEngine) (*Message, error) {
 	var err error
 
 	// get the peer public key
@@ -493,22 +481,20 @@ func (engine *CryptoEngine) DecryptWithPublicKey(encryptedBytes []byte, verifica
 			return nil, err
 		}
 		return messageFromBytes(messageBytes)
-
-	} else {
-		// otherwise decrypt with the standard box open function
-		messageBytes, valid := box.Open(nil, encryptedMessage.data, &encryptedMessage.nonce, &peerPublicKey, &engine.privateKey)
-		if !valid {
-			return nil, ErrorMessageDecryption
-		}
-		return messageFromBytes(messageBytes)
 	}
 
+	// otherwise decrypt with the standard box open function
+	messageBytes, valid := box.Open(nil, encryptedMessage.data, &encryptedMessage.nonce, &peerPublicKey, &engine.privateKey)
+	if !valid {
+		return nil, ErrorMessageDecryption
+	}
+	return messageFromBytes(messageBytes)
 }
 
 func decryptWithPreShared(preSharedKey [keySize]byte, m EncryptedMessage) ([]byte, error) {
-	if decryptedMessage, valid := box.OpenAfterPrecomputation(nil, m.data, &m.nonce, &preSharedKey); !valid {
+	decryptedMessage, valid := box.OpenAfterPrecomputation(nil, m.data, &m.nonce, &preSharedKey)
+	if !valid {
 		return nil, ErrorMessageDecryption
-	} else {
-		return decryptedMessage, nil
 	}
+	return decryptedMessage, nil
 }

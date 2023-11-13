@@ -13,7 +13,7 @@ import (
 // |version| => 8 bytes (uint64 total message length)
 // |type| 	 => 4 bytes (int message version)
 // |message| => N bytes ([]byte message)
-type message struct {
+type Message struct {
 	Version int    // version of the message, done to support backward compatibility
 	Type    int    // message type - this can be ised on the receiver part to process different types
 	Text    string // the encrypted message
@@ -32,8 +32,8 @@ type EncryptedMessage struct {
 // Create a new message with a clear text and the message type
 // messageType: is an identifier to distinguish the messages on the receiver and parse them
 // for example if zero is a JSON message and 1 is XML, then the received can parse different formats with different methods
-func NewMessage(clearText string, messageType int) (message, error) {
-	m := message{}
+func NewMessage(clearText string, messageType int) (Message, error) {
+	m := Message{}
 	if clearText == "" {
 		return m, errors.New("clear text cannot be empty")
 	}
@@ -44,7 +44,7 @@ func NewMessage(clearText string, messageType int) (message, error) {
 	return m, nil
 }
 
-func (m message) toBytes() []byte {
+func (m Message) toBytes() []byte {
 	var buffer bytes.Buffer
 
 	// version
@@ -66,7 +66,6 @@ func (m message) toBytes() []byte {
 // |nonce|	=> nonce size
 // |message| => message
 func encryptedMessageFromBytes(data []byte) (EncryptedMessage, error) {
-
 	var err error
 	var lengthData [8]byte
 	var nonceData [nonceSize]byte
@@ -100,17 +99,15 @@ func encryptedMessageFromBytes(data []byte) (EncryptedMessage, error) {
 	m.nonce = nonceData
 	m.data = message
 	return m, err
-
 }
 
 // This function separates the associated data once decrypted
-func messageFromBytes(data []byte) (*message, error) {
-
+func messageFromBytes(data []byte) (*Message, error) {
 	var err error
 	var versionData [4]byte
 	var typeData [4]byte
 	minimumDataSize := 4 + 4
-	m := new(message)
+	m := new(Message)
 
 	// check if the data is smaller than 36 which is the minimum
 	if data == nil {
@@ -162,5 +159,4 @@ func (m EncryptedMessage) ToBytes() ([]byte, error) {
 	buffer.Write(m.data)
 
 	return buffer.Bytes(), nil
-
 }
