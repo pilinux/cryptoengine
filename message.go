@@ -3,7 +3,6 @@ package cryptoengine
 import (
 	"bytes"
 	"errors"
-	"math"
 
 	"github.com/sec51/convert/smallendian"
 )
@@ -150,10 +149,6 @@ func messageFromBytes(data []byte) (*message, error) {
 // |type| 	 => 4 bytes (int message version)
 // |message| => N bytes ([]byte message)
 func (m EncryptedMessage) ToBytes() ([]byte, error) {
-	if m.length > math.MaxUint64 {
-		return nil, errors.New("the message exceeds the maximum allowed sized: uint64 MAX")
-	}
-
 	var buffer bytes.Buffer
 
 	// length
