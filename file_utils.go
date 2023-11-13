@@ -3,7 +3,6 @@ package cryptoengine
 import (
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -48,14 +47,13 @@ func keyFileExists(filename string) bool {
 
 // Read the full file into a byte slice
 func readFile(filename string) ([]byte, error) {
-	return ioutil.ReadFile(filename)
+	return os.ReadFile(filename)
 }
 
 // Writes a file with read only permissions
 // If the file already exists then it returns the specific error: os.ErrExist
 // This is thanks to the flag O_CREATE
 func writeFile(filename string, data []byte) error {
-
 	if fileExists(filename) {
 		return os.ErrExist
 	}
@@ -68,7 +66,6 @@ func writeFile(filename string, data []byte) error {
 
 	_, err = file.Write(data)
 	return err
-
 }
 
 // Read the key file into a 32 byte array
