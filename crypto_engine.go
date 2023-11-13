@@ -24,6 +24,7 @@ const (
 	tcpVersion          = 0  // this is the current TCP version
 )
 
+// errors
 var (
 	ErrorKeySize           = fmt.Errorf("the provisioned key size is less than: %d", keySize)
 	ErrorKeyNotValid       = fmt.Errorf("the provisioned public key is not valid")
@@ -35,7 +36,7 @@ var (
 	whiteSpaceRegEx        = regexp.MustCompile(`\s`)
 	emptyKey               = make([]byte, keySize)
 
-	// salt for derivating keys
+	// salt for deriving keys
 	saltSuffixFormat = "%s_salt.key" // this is the salt file,for instance: sec51_salt.key
 
 	// secret key for symmetric encryption
@@ -43,14 +44,15 @@ var (
 
 	// asymmetric keys
 	publicKeySuffixFormat = "%s_public.key"  // this is the public key crypto file,for instance: sec51_public.key
-	privateSuffixFormat   = "%s_private.key" // this is the private key crypto file,for instance: sec51_priovate.key
+	privateSuffixFormat   = "%s_private.key" // this is the private key crypto file,for instance: sec51_private.key
 
 	// nonce secret key
 	nonceSuffixFormat = "%s_nonce.key" // this is the secret key crypto file used for generating nonces,for instance: sec51_nonce.key
 )
 
-// This is the basic object which needs to be instanciated for encrypting messages
+// CryptoEngine is the basic object which needs to be instantiated for encrypting messages
 // either via public key cryptography or private key cryptography
+//
 // The object has the methods necessary to execute all the needed functions to encrypt and decrypt a message, both with symmetric and asymmetric
 // crypto
 type CryptoEngine struct {
@@ -66,18 +68,21 @@ type CryptoEngine struct {
 	counterMutex     sync.Mutex               // this is the counter mutex for a safe incrementation (TODO: look into atomic)
 }
 
-// This function initialize all the necessary information to carry out a secure communication
+// InitCryptoEngine function initializes all the necessary information to carry out a secure communication
 // either via public key cryptography or secret key cryptography.
 // The peculiarity is that the user of this package needs to take care of only one parameter, the communicationIdentifier.
 // It defines a unique set of keys between the application and the communicationIdentifier unique end point.
+//
 // IMPORTANT: The parameter communicationIdentifier defines several assumptions the code use:
-//   - it names the secret key files with the comuncationIdentifier prefix. This means that if you want to have different secret keys
-//     with different end points, you can differrentiate the key by having different unique communicationIdentifier.
+//
+//   - it names the secret key files with the communicationIdentifier prefix. This means that if you want to have different secret keys
+//     with different end points, you can differentiate the key by having different unique communicationIdentifier.
 //     It, also, loads the already created keys back in memory based on the communicationIdentifier
+//
 //   - it does the same with the asymmetric keys
 //
 // The communicationIdentifier parameter is URL unescape, trimmed, set to lower case and all the white spaces are replaced with an underscore.
-// The publicKey parameter can be nil. In that case the CryptoEngine assumes it has been instanciated for symmetric crypto usage.
+// The publicKey parameter can be nil. In that case the CryptoEngine assumes it has been instantiated for symmetric crypto usage.
 func InitCryptoEngine(communicationIdentifier string) (*CryptoEngine, error) {
 	// define an error object
 	var err error
@@ -152,8 +157,11 @@ func generateSecretKey() ([keySize]byte, error) {
 }
 
 // load the salt random bytes from the id_salt.key
+//
 // if the file does not exist, create a new one
+//
 // if the file is older than N days (default 2) generate a new one and overwrite the old
+//
 // TODO: rotate the salt file
 func loadSalt(id string) ([keySize]byte, error) {
 	var salt [keySize]byte
@@ -179,6 +187,7 @@ func loadSalt(id string) ([keySize]byte, error) {
 }
 
 // load the key random bytes from the id_secret.key
+//
 // if the file does not exist, create a new one
 func loadSecretKey(id string) ([keySize]byte, error) {
 	var key [keySize]byte
@@ -204,6 +213,7 @@ func loadSecretKey(id string) ([keySize]byte, error) {
 }
 
 // load the nonce key random bytes from the id_nonce.key
+//
 // if the file does not exist, create a new one
 func loadNonceKey(id string) ([keySize]byte, error) {
 	var nonceKey [keySize]byte
@@ -229,7 +239,9 @@ func loadNonceKey(id string) ([keySize]byte, error) {
 }
 
 // load the key pair, public and private keys, the id_public.key, id_private.key
+//
 // if the files do not exist, create them
+//
 // Returns the publicKey, privateKey, error
 func loadKeyPairs(id string) ([keySize]byte, [keySize]byte, error) {
 	var private [keySize]byte
@@ -276,7 +288,7 @@ func loadKeyPairs(id string) ([keySize]byte, [keySize]byte, error) {
 		// delete the public key, otherwise we remain in an unwanted state
 		// the delete can fail as well, therefore we print an error
 		if err := deleteFile(publicFile); err != nil {
-			log.Printf("[SEVERE] - The private key for asymmetric encryption, %s, failed to be persisted. \nWhile trying to cleanup also the public key previosuly stored, %s, the operation failed as well.\nWe are now in an unrecoverable state.Please delete both files manually: %s - %s", privateFile, publicFile, privateFile, publicFile)
+			log.Printf("[SEVERE] - The private key for asymmetric encryption, %s, failed to be persisted. \nWhile trying to cleanup also the public key previously stored, %s, the operation failed as well.\nWe are now in an unrecoverable state. Please delete both files manually: %s - %s", privateFile, publicFile, privateFile, publicFile)
 			return public, private, err
 		}
 		return public, private, err
@@ -287,7 +299,9 @@ func loadKeyPairs(id string) ([keySize]byte, [keySize]byte, error) {
 }
 
 // Sanitizes the input of the communicationIdentifier
+//
 // The input is URL unescape, trimmed, set to lower case and all the white spaces are replaced with an underscore.
+//
 // TODO: evaluate the QueryUnescape error
 func sanitizeIdentifier(id string) string {
 	// unescape in case it;s URL encoded
@@ -320,12 +334,12 @@ func (engine *CryptoEngine) fetchAndIncrement() string {
 	return counterString
 }
 
-// Gives access to the public key
+// PublicKey gives access to the public key.
 func (engine *CryptoEngine) PublicKey() []byte {
 	return engine.publicKey[:]
 }
 
-// This method accepts a message , then encrypts its Version+Type+Text using a symmetric key
+// NewEncryptedMessage accepts a message , then encrypts its Version+Type+Text using a symmetric key.
 func (engine *CryptoEngine) NewEncryptedMessage(msg Message) (EncryptedMessage, error) {
 	m := EncryptedMessage{}
 
@@ -348,9 +362,9 @@ func (engine *CryptoEngine) NewEncryptedMessage(msg Message) (EncryptedMessage, 
 	return m, nil
 }
 
-// This method accepts the message as byte slice and the public key of the receiver of the messae,
+// NewEncryptedMessageWithPubKey accepts the message as byte slice and the public key of the receiver of the message,
 // then encrypts it using the asymmetric key public key.
-// If the public key is not privisioned and does not have the required length of 32 bytes it raises an exception.
+// If the public key is not provisioned and does not have the required length of 32 bytes it raises an exception.
 func (engine *CryptoEngine) NewEncryptedMessageWithPubKey(msg Message, verificationEngine VerificationEngine) (EncryptedMessage, error) {
 	encryptedMessage := EncryptedMessage{}
 
@@ -382,7 +396,7 @@ func (engine *CryptoEngine) NewEncryptedMessageWithPubKey(msg Message, verificat
 	// lock the mutex
 	engine.mutex.Lock()
 
-	// check if the pre sgared key is already present in the map
+	// check if the pre-shared key is already present in the map
 	if preSharedKey, ok := engine.preSharedKeysMap[sha224String]; ok { // means the key is there
 		// unlock the mutex
 		engine.mutex.Unlock()
@@ -421,7 +435,7 @@ func (engine *CryptoEngine) NewEncryptedMessageWithPubKey(msg Message, verificat
 	return encryptedMessage, nil
 }
 
-// This method is used to decrypt messages where symmetrci encryption is used
+// Decrypt is used to decrypt messages where symmetric encryption is used.
 func (engine *CryptoEngine) Decrypt(encryptedBytes []byte) (*Message, error) {
 	var err error
 	msg := new(Message)
@@ -447,7 +461,7 @@ func (engine *CryptoEngine) Decrypt(encryptedBytes []byte) (*Message, error) {
 	return msg, nil
 }
 
-// This method is used to decrypt messages where symmetrci encryption is used
+// DecryptWithPublicKey is used to decrypt messages where symmetric encryption is used.
 func (engine *CryptoEngine) DecryptWithPublicKey(encryptedBytes []byte, verificationEngine VerificationEngine) (*Message, error) {
 	var err error
 
@@ -471,7 +485,7 @@ func (engine *CryptoEngine) DecryptWithPublicKey(encryptedBytes []byte, verifica
 	// lock the mutex
 	engine.mutex.Lock()
 
-	// check if the pre sgared key is already present in the map
+	// check if the pre-shared key is already present in the map
 	if preSharedKey, ok := engine.preSharedKeysMap[sha224String]; ok { // means the key is there
 		// unlock the mutex
 		engine.mutex.Unlock()

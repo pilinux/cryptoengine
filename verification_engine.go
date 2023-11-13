@@ -6,14 +6,14 @@ import (
 	"fmt"
 )
 
-// The verification engine links two peers basically.
-// It holds the public key and the remote peer public key and the pre-shared key
+// VerificationEngine links two peers basically.
+// It holds the public key and the remote peer public key and the pre-shared key.
 type VerificationEngine struct {
 	publicKey [keySize]byte // the peer public key
 }
 
-// This function instantiate the verification engine by leveraging the context
-// Basically if a public key of a peer is available locally then it's locaded here
+// NewVerificationEngine instantiates the verification engine by leveraging the context.
+// Basically if a public key of a peer is available locally, then it's loaded here.
 func NewVerificationEngine(context string) (VerificationEngine, error) {
 	engine := VerificationEngine{}
 
@@ -33,15 +33,16 @@ func NewVerificationEngine(context string) (VerificationEngine, error) {
 		}
 
 		// if we reached here, it means that both the public key
-		// existed and was loaded successfull
+		// existed and was loaded successfully
 		engine.publicKey = public
 	}
 
 	return engine, nil
 }
 
-// This function instantiate the verification engine by passing it the key (at the moment only the public key)
-// go nacl crypto does not support Ed25519 signatures yet
+// NewVerificationEngineWithKey instantiates the verification engine by passing it the key
+// (at the moment only the public key).
+// go nacl crypto does not support Ed25519 signatures yet.
 func NewVerificationEngineWithKey(publicKey []byte) (VerificationEngine, error) {
 	engine := VerificationEngine{}
 	var data32 [keySize]byte
@@ -60,6 +61,7 @@ func NewVerificationEngineWithKey(publicKey []byte) (VerificationEngine, error) 
 	return engine, nil
 }
 
+// PublicKey returns the public key of the peer.
 func (e VerificationEngine) PublicKey() [keySize]byte {
 	return e.publicKey
 }

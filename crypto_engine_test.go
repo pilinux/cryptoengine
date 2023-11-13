@@ -60,15 +60,15 @@ func TestSecretKeyEncryption(t *testing.T) {
 
 	// check the encrypted message data if it matches
 	if storedMessage.length != encryptedMessage.length {
-		t.Error("Encrypted Message length mismacth")
+		t.Error("Encrypted Message length mismatch")
 	}
 
 	if !bytes.Equal(storedMessage.nonce[:], encryptedMessage.nonce[:]) {
-		t.Error("Encrypted  Message nonce mismacth")
+		t.Error("Encrypted  Message nonce mismatch")
 	}
 
 	if !bytes.Equal(storedMessage.data[:], encryptedMessage.data[:]) {
-		t.Error("Encrypted Message data mismacth")
+		t.Error("Encrypted Message data mismatch")
 	}
 
 	decrypted, err := enginePeer.Decrypt(messageBytes)
@@ -158,15 +158,15 @@ func TestPublicKeyEncryption(t *testing.T) {
 
 	// check the encrypted message data if it matches
 	if storedMessage.length != encryptedMessage.length {
-		t.Error("Encrypted Message length mismacth")
+		t.Error("Encrypted Message length mismatch")
 	}
 
 	if !bytes.Equal(storedMessage.nonce[:], encryptedMessage.nonce[:]) {
-		t.Error("Encrypted  Message nonce mismacth")
+		t.Error("Encrypted  Message nonce mismatch")
 	}
 
 	if !bytes.Equal(storedMessage.data[:], encryptedMessage.data[:]) {
-		t.Error("Encrypted Message data mismacth")
+		t.Error("Encrypted Message data mismatch")
 	}
 
 	decrypted, err := secondEngine.DecryptWithPublicKey(storedData, firstVerificationEngine)

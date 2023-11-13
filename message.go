@@ -7,21 +7,28 @@ import (
 	"github.com/sec51/convert/smallendian"
 )
 
-// This struct encapsulate the ecnrypted message in a TCP packet, in an easily parseable format
-// We assume the data is always encrypted
+// Message struct encapsulates the encrypted message in a TCP packet, in an easily parsable format.
+// We assume the data is always encrypted.
+//
 // Format:
+//
 // |version| => 8 bytes (uint64 total message length)
+//
 // |type| 	 => 4 bytes (int message version)
+//
 // |message| => N bytes ([]byte message)
 type Message struct {
 	Version int    // version of the message, done to support backward compatibility
-	Type    int    // message type - this can be ised on the receiver part to process different types
+	Type    int    // message type - this can be used on the receiver part to process different types
 	Text    string // the encrypted message
 }
 
-// This struct represent the encrypted message which can be sent over the networl safely
-// |lenght| => 8 bytes (uint64 total message length)
+// EncryptedMessage struct represent the encrypted message which can be sent over the network safely.
+//
+// |length| => 8 bytes (uint64 total message length)
+//
 // |nonce| => 24 bytes ([]byte size)
+//
 // |message| => N bytes ([]byte message)
 type EncryptedMessage struct {
 	length uint64
@@ -29,8 +36,10 @@ type EncryptedMessage struct {
 	data   []byte
 }
 
-// Create a new message with a clear text and the message type
+// NewMessage creates a new message with a clear text and the message type.
+//
 // messageType: is an identifier to distinguish the messages on the receiver and parse them
+//
 // for example if zero is a JSON message and 1 is XML, then the received can parse different formats with different methods
 func NewMessage(clearText string, messageType int) (Message, error) {
 	m := Message{}
@@ -62,8 +71,11 @@ func (m Message) toBytes() []byte {
 }
 
 // Parse the bytes coming from the network and extract
+//
 // |length| => 8
+//
 // |nonce|	=> nonce size
+//
 // |message| => message
 func encryptedMessageFromBytes(data []byte) (EncryptedMessage, error) {
 	var err error
@@ -81,11 +93,11 @@ func encryptedMessageFromBytes(data []byte) (EncryptedMessage, error) {
 		return m, ErrorMessageParsing
 	}
 
-	lenght := data[:8]
+	length := data[:8]
 	nonce := data[8 : 8+nonceSize] // 24 bytes
 	message := data[minimumDataSize:]
 
-	total := copy(lengthData[:], lenght)
+	total := copy(lengthData[:], length)
 	if total != 8 {
 		return m, ErrorMessageParsing
 	}
@@ -138,12 +150,20 @@ func messageFromBytes(data []byte) (*Message, error) {
 	return m, err
 }
 
-// STRUCTURE
+// ToBytes converts the encrypted message to bytes
+//
+// # STRUCTURE
+//
 // 8  => |SIZE|
+//
 // 24 => |NONCE|
+//
 // N  => |DATA|
+//
 // |size| => 8 bytes (uint64 total message length)
+//
 // |type| 	 => 4 bytes (int message version)
+//
 // |message| => N bytes ([]byte message)
 func (m EncryptedMessage) ToBytes() ([]byte, error) {
 	var buffer bytes.Buffer

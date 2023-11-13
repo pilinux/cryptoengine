@@ -9,7 +9,8 @@ import (
 )
 
 // IMPORTANT !!!
-// If someone changes the hash function, then the salt needs to have the exactly same lenght!
+//
+// If someone changes the hash function, then the salt needs to have the exactly same length!
 // So be careful when touching this.
 func deriveNonce(masterKey [keySize]byte, salt [keySize]byte, context string, counterValue string) ([nonceSize]byte, error) {
 	var data24 [nonceSize]byte

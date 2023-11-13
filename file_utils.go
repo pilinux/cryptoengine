@@ -51,7 +51,9 @@ func readFile(filename string) ([]byte, error) {
 }
 
 // Writes a file with read only permissions
+//
 // If the file already exists then it returns the specific error: os.ErrExist
+//
 // This is thanks to the flag O_CREATE
 func writeFile(filename string, data []byte) error {
 	if fileExists(filename) {
@@ -83,14 +85,14 @@ func readKey(filename, pathFormat string) ([keySize]byte, error) {
 	if err != nil {
 		return data32, err
 	}
-	// fill in the 32 byte array witht he data and return it
+	// fill in the 32 byte array with the data and return it
 	copy(data32[:], dst[:keySize])
 	return data32, err
 }
 
 // Write the key file hex encoded
 func writeKey(filename, pathFormat string, data []byte) error {
-	dst := make([]byte, hex.EncodedLen(len(data))) //StdEncoding.EncodedLen(len(data)))
+	dst := make([]byte, hex.EncodedLen(len(data))) // StdEncoding.EncodedLen(len(data)))
 	hex.Encode(dst, data)                          // StdEncoding.Encode(dst, data)
 	filePath := fmt.Sprintf(pathFormat, filename)
 	return writeFile(filePath, dst)
