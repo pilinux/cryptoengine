@@ -57,7 +57,7 @@ func NewVerificationEngineWithKey(publicKey []byte) (VerificationEngine, error) 
 
 	total := copy(data32[:], publicKey)
 	if total != keySize {
-		return engine, KeySizeError
+		return engine, ErrorKeySize
 	}
 
 	engine.publicKey = data32

@@ -75,11 +75,11 @@ func encryptedMessageFromBytes(data []byte) (EncryptedMessage, error) {
 
 	// check if the data is smaller than 36 which is the minimum
 	if data == nil {
-		return m, MessageParsingError
+		return m, ErrorMessageParsing
 	}
 
 	if len(data) < minimumDataSize+1 {
-		return m, MessageParsingError
+		return m, ErrorMessageParsing
 	}
 
 	lenght := data[:8]
@@ -88,12 +88,12 @@ func encryptedMessageFromBytes(data []byte) (EncryptedMessage, error) {
 
 	total := copy(lengthData[:], lenght)
 	if total != 8 {
-		return m, MessageParsingError
+		return m, ErrorMessageParsing
 	}
 
 	total = copy(nonceData[:], nonce)
 	if total != nonceSize {
-		return m, MessageParsingError
+		return m, ErrorMessageParsing
 	}
 
 	m.length = smallendian.FromUint64(lengthData)
@@ -114,11 +114,11 @@ func messageFromBytes(data []byte) (*message, error) {
 
 	// check if the data is smaller than 36 which is the minimum
 	if data == nil {
-		return nil, MessageParsingError
+		return nil, ErrorMessageParsing
 	}
 
 	if len(data) < minimumDataSize+1 {
-		return nil, MessageParsingError
+		return nil, ErrorMessageParsing
 	}
 
 	version := data[:4]
@@ -127,12 +127,12 @@ func messageFromBytes(data []byte) (*message, error) {
 
 	total := copy(versionData[:], version)
 	if total != 4 {
-		return nil, MessageParsingError
+		return nil, ErrorMessageParsing
 	}
 
 	total = copy(typeData[:], typeMsg)
 	if total != 4 {
-		return nil, MessageParsingError
+		return nil, ErrorMessageParsing
 	}
 
 	m.Version = smallendian.FromInt(versionData)

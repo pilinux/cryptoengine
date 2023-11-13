@@ -4,10 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
-	"errors"
 	"fmt"
-	"golang.org/x/crypto/nacl/box"
-	"golang.org/x/crypto/nacl/secretbox"
 	"log"
 	"math"
 	"net/url"
@@ -15,6 +12,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"golang.org/x/crypto/nacl/box"
+	"golang.org/x/crypto/nacl/secretbox"
 )
 
 const (
@@ -25,14 +25,14 @@ const (
 )
 
 var (
-	KeySizeError           = errors.New(fmt.Sprintf("The provisioned key size is less than: %d\n", keySize))
-	KeyNotValidError       = errors.New("The provisioned public key is not valid")
-	SaltGenerationError    = errors.New("Could not generate random salt")
-	KeyGenerationError     = errors.New("Could not generate random key")
-	MessageDecryptionError = errors.New("Could not verify the message. Message has been tempered with!")
-	MessageParsingError    = errors.New("Could not parse the Message from bytes")
-	messageEmpty           = errors.New("Can not encrypt an empty message")
-	whiteSpaceRegEx        = regexp.MustCompile("\\s")
+	ErrorKeySize           = fmt.Errorf("the provisioned key size is less than: %d", keySize)
+	ErrorKeyNotValid       = fmt.Errorf("the provisioned public key is not valid")
+	ErrorSaltGeneration    = fmt.Errorf("could not generate random salt")
+	ErrorKeyGeneration     = fmt.Errorf("could not generate random key")
+	ErrorMessageDecryption = fmt.Errorf("could not verify the message - message has been tempered with")
+	ErrorMessageParsing    = fmt.Errorf("could not parse the Message from bytes")
+	ErrorMessageEmpty      = fmt.Errorf("cannot encrypt an empty message")
+	whiteSpaceRegEx        = regexp.MustCompile(`\s`)
 	emptyKey               = make([]byte, keySize)
 
 	// salt for derivating keys
@@ -71,10 +71,11 @@ type CryptoEngine struct {
 // The peculiarity is that the user of this package needs to take care of only one parameter, the communicationIdentifier.
 // It defines a unique set of keys between the application and the communicationIdentifier unique end point.
 // IMPORTANT: The parameter communicationIdentifier defines several assumptions the code use:
-// - it names the secret key files with the comuncationIdentifier prefix. This means that if you want to have different secret keys
-//   with different end points, you can differrentiate the key by having different unique communicationIdentifier.
-//   It, also, loads the already created keys back in memory based on the communicationIdentifier
-// - it does the same with the asymmetric keys
+//   - it names the secret key files with the comuncationIdentifier prefix. This means that if you want to have different secret keys
+//     with different end points, you can differrentiate the key by having different unique communicationIdentifier.
+//     It, also, loads the already created keys back in memory based on the communicationIdentifier
+//   - it does the same with the asymmetric keys
+//
 // The communicationIdentifier parameter is URL unescape, trimmed, set to lower case and all the white spaces are replaced with an underscore.
 // The publicKey parameter can be nil. In that case the CryptoEngine assumes it has been instanciated for symmetric crypto usage.
 func InitCryptoEngine(communicationIdentifier string) (*CryptoEngine, error) {
@@ -131,7 +132,7 @@ func generateSalt() ([keySize]byte, error) {
 	}
 	total := copy(data32[:], data)
 	if total != keySize {
-		return data32, SaltGenerationError
+		return data32, ErrorSaltGeneration
 	}
 	return data32, nil
 }
@@ -146,7 +147,7 @@ func generateSecretKey() ([keySize]byte, error) {
 	}
 	total := copy(data32[:], data[:keySize])
 	if total != keySize {
-		return data32, KeyGenerationError
+		return data32, ErrorKeyGeneration
 	}
 	return data32, nil
 }
@@ -367,12 +368,12 @@ func (engine *CryptoEngine) NewEncryptedMessageWithPubKey(msg message, verificat
 
 	// check the size of the peerPublicKey
 	if len(peerPublicKey) != keySize {
-		return encryptedMessage, KeyNotValidError
+		return encryptedMessage, ErrorKeyNotValid
 	}
 
 	// check the peerPublicKey is not empty (all zeros)
 	if bytes.Compare(peerPublicKey[:], emptyKey) == 0 {
-		return encryptedMessage, KeyNotValidError
+		return encryptedMessage, ErrorKeyNotValid
 	}
 
 	// derive nonce
@@ -446,7 +447,7 @@ func (engine *CryptoEngine) Decrypt(encryptedBytes []byte) (*message, error) {
 
 	// if the verification failed
 	if !valid {
-		return nil, MessageDecryptionError
+		return nil, ErrorMessageDecryption
 	}
 
 	// means we successfully managed to decrypt
@@ -471,7 +472,7 @@ func (engine *CryptoEngine) DecryptWithPublicKey(encryptedBytes []byte, verifica
 
 	// Make sure the key has a valid size
 	if len(peerPublicKey) < keySize {
-		return nil, KeyNotValidError
+		return nil, ErrorKeyNotValid
 	}
 
 	// calculate the hash of the peer public key
@@ -495,7 +496,7 @@ func (engine *CryptoEngine) DecryptWithPublicKey(encryptedBytes []byte, verifica
 		// otherwise decrypt with the standard box open function
 		messageBytes, valid := box.Open(nil, encryptedMessage.data, &encryptedMessage.nonce, &peerPublicKey, &engine.privateKey)
 		if !valid {
-			return nil, MessageDecryptionError
+			return nil, ErrorMessageDecryption
 		}
 		return messageFromBytes(messageBytes)
 	}
@@ -504,7 +505,7 @@ func (engine *CryptoEngine) DecryptWithPublicKey(encryptedBytes []byte, verifica
 
 func decryptWithPreShared(preSharedKey [keySize]byte, m EncryptedMessage) ([]byte, error) {
 	if decryptedMessage, valid := box.OpenAfterPrecomputation(nil, m.data, &m.nonce, &preSharedKey); !valid {
-		return nil, MessageDecryptionError
+		return nil, ErrorMessageDecryption
 	} else {
 		return decryptedMessage, nil
 	}
