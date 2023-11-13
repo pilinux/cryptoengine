@@ -437,9 +437,6 @@ func (engine *CryptoEngine) NewEncryptedMessageWithPubKey(msg Message, verificat
 
 // Decrypt is used to decrypt messages where symmetric encryption is used.
 func (engine *CryptoEngine) Decrypt(encryptedBytes []byte) (*Message, error) {
-	var err error
-	msg := new(Message)
-
 	// convert the bytes to an encrypted message
 	encryptedMessage, err := encryptedMessageFromBytes(encryptedBytes)
 	if err != nil {
@@ -454,11 +451,7 @@ func (engine *CryptoEngine) Decrypt(encryptedBytes []byte) (*Message, error) {
 	}
 
 	// means we successfully managed to decrypt
-	msg, err = messageFromBytes(decryptedMessageBytes)
-	if err != nil {
-		return nil, err
-	}
-	return msg, nil
+	return messageFromBytes(decryptedMessageBytes)
 }
 
 // DecryptWithPublicKey is used to decrypt messages where symmetric encryption is used.
