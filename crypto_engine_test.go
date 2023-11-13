@@ -64,11 +64,11 @@ func TestSecretKeyEncryption(t *testing.T) {
 		t.Error("Encrypted Message length mismacth")
 	}
 
-	if bytes.Compare(storedMessage.nonce[:], encryptedMessage.nonce[:]) != 0 {
+	if !bytes.Equal(storedMessage.nonce[:], encryptedMessage.nonce[:]) {
 		t.Error("Encrypted  Message nonce mismacth")
 	}
 
-	if bytes.Compare(storedMessage.data[:], encryptedMessage.data[:]) != 0 {
+	if !bytes.Equal(storedMessage.data[:], encryptedMessage.data[:]) {
 		t.Error("Encrypted Message data mismacth")
 	}
 
@@ -162,11 +162,11 @@ func TestPublicKeyEncryption(t *testing.T) {
 		t.Error("Encrypted Message length mismacth")
 	}
 
-	if bytes.Compare(storedMessage.nonce[:], encryptedMessage.nonce[:]) != 0 {
+	if !bytes.Equal(storedMessage.nonce[:], encryptedMessage.nonce[:]) {
 		t.Error("Encrypted  Message nonce mismacth")
 	}
 
-	if bytes.Compare(storedMessage.data[:], encryptedMessage.data[:]) != 0 {
+	if !bytes.Equal(storedMessage.data[:], encryptedMessage.data[:]) {
 		t.Error("Encrypted Message data mismacth")
 	}
 

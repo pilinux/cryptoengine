@@ -9,8 +9,7 @@ import (
 // The verification engine links two peers basically.
 // It holds the public key and the remote peer public key and the pre-shared key
 type VerificationEngine struct {
-	publicKey        [keySize]byte // the peer public key
-	signingPublicKey [keySize]byte // the peer public signing key => this is not implemented yet, because go does not support Ed25519 signatures yet
+	publicKey [keySize]byte // the peer public key
 }
 
 // This function instantiate the verification engine by leveraging the context
@@ -51,7 +50,7 @@ func NewVerificationEngineWithKey(publicKey []byte) (VerificationEngine, error) 
 	var data32 [keySize]byte
 
 	// check the peerPublicKey is not empty (all zeros)
-	if bytes.Compare(publicKey[:], emptyKey) == 0 {
+	if bytes.Equal(publicKey[:], emptyKey) {
 		return engine, errors.New("public key cannot be empty while creating the verification engine")
 	}
 

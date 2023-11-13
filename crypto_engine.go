@@ -372,7 +372,7 @@ func (engine *CryptoEngine) NewEncryptedMessageWithPubKey(msg message, verificat
 	}
 
 	// check the peerPublicKey is not empty (all zeros)
-	if bytes.Compare(peerPublicKey[:], emptyKey) == 0 {
+	if bytes.Equal(peerPublicKey[:], emptyKey) {
 		return encryptedMessage, ErrorKeyNotValid
 	}
 
@@ -452,8 +452,10 @@ func (engine *CryptoEngine) Decrypt(encryptedBytes []byte) (*message, error) {
 
 	// means we successfully managed to decrypt
 	msg, err = messageFromBytes(decryptedMessageBytes)
+	if err != nil {
+		return nil, err
+	}
 	return msg, nil
-
 }
 
 // This method is used to decrypt messages where symmetrci encryption is used

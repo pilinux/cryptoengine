@@ -95,7 +95,7 @@ func TestKeyFileUtils(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if bytes.Compare(key[:], storedKey[:]) != 0 {
+	if !bytes.Equal(key[:], storedKey[:]) {
 		t.Fatal("The generated random key and the stored one, do not match")
 	}
 
