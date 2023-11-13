@@ -2,8 +2,7 @@ package cryptoengine
 
 import (
 	"bytes"
-
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 )
@@ -47,7 +46,7 @@ func TestSecretKeyEncryption(t *testing.T) {
 	buffer.Write(messageBytes)
 
 	// read the bytes back
-	storedData, err := ioutil.ReadAll(&buffer)
+	storedData, err := io.ReadAll(&buffer)
 	if err != nil {
 		cleanUp()
 		t.Fatal(err)
@@ -145,7 +144,7 @@ func TestPublicKeyEncryption(t *testing.T) {
 	buffer.Write(messageBytes)
 
 	// read the bytes back
-	storedData, err := ioutil.ReadAll(&buffer)
+	storedData, err := io.ReadAll(&buffer)
 	if err != nil {
 		cleanUp()
 		t.Fatal(err)
