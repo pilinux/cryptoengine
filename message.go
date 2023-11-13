@@ -3,8 +3,9 @@ package cryptoengine
 import (
 	"bytes"
 	"errors"
-	"github.com/sec51/convert/smallendian"
 	"math"
+
+	"github.com/sec51/convert/smallendian"
 )
 
 // This struct encapsulate the ecnrypted message in a TCP packet, in an easily parseable format
@@ -35,7 +36,7 @@ type EncryptedMessage struct {
 func NewMessage(clearText string, messageType int) (message, error) {
 	m := message{}
 	if clearText == "" {
-		return m, errors.New("Clear text cannot be empty")
+		return m, errors.New("clear text cannot be empty")
 	}
 
 	m.Text = clearText //:= message{tcpVersion, messageType, clearText}
@@ -150,7 +151,7 @@ func messageFromBytes(data []byte) (*message, error) {
 // |message| => N bytes ([]byte message)
 func (m EncryptedMessage) ToBytes() ([]byte, error) {
 	if m.length > math.MaxUint64 {
-		return nil, errors.New("The message exceeds the maximum allowed sized: uint64 MAX")
+		return nil, errors.New("the message exceeds the maximum allowed sized: uint64 MAX")
 	}
 
 	var buffer bytes.Buffer

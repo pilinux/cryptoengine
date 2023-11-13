@@ -3,8 +3,9 @@ package cryptoengine
 import (
 	"crypto/sha256"
 	"errors"
-	"golang.org/x/crypto/hkdf"
 	"io"
+
+	"golang.org/x/crypto/hkdf"
 )
 
 // IMPORTANT !!!
@@ -26,7 +27,7 @@ func deriveNonce(masterKey [keySize]byte, salt [keySize]byte, context string, co
 
 	total := copy(data24[:], key[:nonceSize])
 	if total != nonceSize {
-		return data24, errors.New("Could not derive a nonce.")
+		return data24, errors.New("could not derive a nonce")
 	}
 	return data24, nil
 

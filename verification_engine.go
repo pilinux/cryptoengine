@@ -20,7 +20,7 @@ func NewVerificationEngine(context string) (VerificationEngine, error) {
 	engine := VerificationEngine{}
 
 	if context == "" {
-		return engine, errors.New("Context cannot be empty when initializing the Verification Engine")
+		return engine, errors.New("context cannot be empty when initializing the verification engine")
 	}
 
 	// try to load the public key and if it succeed, then return both the keys
@@ -52,7 +52,7 @@ func NewVerificationEngineWithKey(publicKey []byte) (VerificationEngine, error) 
 
 	// check the peerPublicKey is not empty (all zeros)
 	if bytes.Compare(publicKey[:], emptyKey) == 0 {
-		return engine, errors.New("Public key cannot be empty while creating the verification engine")
+		return engine, errors.New("public key cannot be empty while creating the verification engine")
 	}
 
 	total := copy(data32[:], publicKey)
